@@ -1,4 +1,7 @@
-# Web Scraping API Documentation (It work but not relase yet)
+Certainly! Here's an updated version of the `readme.md` file with improved formatting and additional examples:
+
+```markdown
+# Web Scraping API Documentation
 
 Welcome to the documentation for our Web Scraping API. This guide will provide you with all the necessary information to integrate and utilize our API effectively. Whether you're a seasoned developer or just getting started with web scraping, this documentation will help you leverage the power of our API to retrieve valuable data from websites.
 
@@ -7,11 +10,11 @@ Welcome to the documentation for our Web Scraping API. This guide will provide y
 1. [Introduction](#introduction)
 2. [Endpoint](#endpoint)
 3. [Request Parameters](#request-parameters)
-5. [Response Format](#response-format)
-6. [Error Handling](#error-handling)
-7. [Examples](#examples)
-8. [Rate Limiting](#rate-limiting)
-9. [Support](#support)
+4. [Response Format](#response-format)
+5. [Error Handling](#error-handling)
+6. [Examples](#examples)
+7. [Rate Limiting](#rate-limiting)
+8. [Support](#support)
 
 ## Introduction
 
@@ -29,93 +32,108 @@ https://beautiful-scrape.vercel.app/api/scrap
 
 The API supports both GET and POST requests. The following parameters should be included in your requests:
 
-- `url` (required): The URL of the webpage you want to scrape.
-- `arguments` (required): An array of objects specifying the scraping instructions. Each object represents a specific scraping action to be performed on the webpage.
+1. `url` (string, required): The URL of the website you want to scrape.
+2. `arguments` (array, required): An array of objects specifying the BeautifulSoup arguments to extract the desired data.
 
-The `arguments` array should follow the structure below:
+### Arguments Object
 
+Each argument object can have one of the following structures:
+
+1. Attribute Name:
+   ```json
+   {
+     "attribute_name": "name"
+   }
+   ```
+
+   Example: Extract the text content of a `<span>` tag with class "text".
+   ```json
+   {
+     "find_all": ["span", { "class": "text" }]
+   }
+   ```
+
+2. Method:
+   ```json
+   {
+     "method_name": ["arg1", "arg2", ...],
+     "at_element": [
+       {
+         "method_name": ["arg1", "arg2", ...]
+       },
+       ...
+     ]
+   }
+   ```
+
+   Example: Extract the author name and tags associated with each quote.
+   ```json
+   {
+     "find_all": ["div", { "class": "quote" }],
+     "at_element": [
+       {
+         "find": ["span", { "class": "author" }]
+       },
+       {
+         "find_all": ["a", { "class": "tag" }]
+       }
+     ]
+   }
+   ```
+
+3. List:
+   ```json
+   [
+     "arg1",
+     "arg2",
+     ...
+   ]
+   ```
+
+   Example: Extract the attribute values of all `<a>` tags.
+   ```json
+   [
+     "find_all",
+     ["a"],
+     ["get", "href"]
+   ]
+   ```
+
+## Response Format
+
+The API will return the extracted data in JSON format. The structure of the response will depend on the specified arguments.
+
+Example response for extracting quotes from `quotes.toscrape.com`:
 ```json
-"arguments": [
-  {
-    "select": ["<CSS selector>"],
-    "at_elment": {
-      "<optional_method>": ["<optional_method_argument>"]
-    }
-  },
+[
+  [
+    "“The world as we have created it is a process of our thinking. It cannot be changed without changing our thinking.”",
+    "Albert Einstein"
+  ],
+  [
+    "“It is our choices, Harry, that show what we truly are, far more than our abilities.”",
+    "J.K. Rowling"
+  ],
   ...
 ]
 ```
 
-- `select`: An array of CSS selectors representing the elements you want to extract from the webpage.
-- `at_elment` (optional): An object specifying additional methods to be applied to the selected elements. This allows you to further manipulate or extract specific data from the elements.
-
-## Response Format
-
-The API response will be in JSON format and will contain the extracted data based on your scraping instructions. The structure of the response will match the structure of the `arguments` array in your request, with each element containing the extracted data for the corresponding scraping action.
-
 ## Error Handling
 
-If an error occurs during the processing of your request, the API will return an error response in JSON format. The response will include an `error` field with a description of the encountered error.
+If an error occurs during the
+
+ scraping process or if the request is invalid, the API will return an error response in the following format:
+
+```json
+{
+  "error": "Error message here"
+}
+```
 
 ## Examples
 
-Here are a few examples to demonstrate how to use our Web Scraping API:
+### GET Request Example
 
-1. Retrieve the text content of all `<h1>` elements from a webpage:
+Retrieve the text content of a `<span>` tag with class "text" from `quotes.toscrape.com`.
 
-```json
-{
-  "url": "https://example.com",
-  "arguments": [
-    {
-      "select": ["h1"]
-    }
-  ]
-}
 ```
-
-2. Retrieve the text content of all `<a>` elements inside a specific `<div>`:
-
-```json
-{
-  "url": "https://example.com",
-  "arguments": [
-    {
-      "select": ["div.my-div-class a"]
-    }
-  ]
-}
-```
-
-3. Retrieve the `href` attribute of the first `<a>` element and extract the domain name from it:
-
-```json
-{
-  "url": "https://example.com",
-  "arguments": [
-
-
-    {
-      "select": ["a:first-child"],
-      "at_elment": {
-        "get_attribute": ["href"],
-        "extract_domain": []
-      }
-    }
-  ]
-}
-```
-
-## Rate Limiting
-
-To ensure fair usage and maintain optimal performance, our API enforces rate limiting. The specific rate limits will be provided to you when you sign up and obtain an API key.
-
-## Support
-
-If you have any questions, issues, or need assistance while using our Web Scraping API, please don't hesitate to reach out to our support team. We're here to help you make the most of our services and ensure a smooth integration experience.
-
-Contact information:
-- Email: support@example.com
-- Website: https://www.example.com/support
-
-That's it
