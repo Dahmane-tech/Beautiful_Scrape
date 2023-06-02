@@ -1,104 +1,125 @@
-from flask import Flask, request, jsonify
-from bs4 import BeautifulSoup, ResultSet
-import requests
-import json
+T='POST'
 
+J='at_elment'
 
-def parse_as_additional_method(obj_of_soup, result, soup):
-    at_element = obj_of_soup["at_element"]
-    if isinstance(result, ResultSet):
-        return [parse_as_method(at_element, element) for element in result]
-    elif isinstance(at_element, dict):
-        return parse_as_method(at_element, result)
-    elif isinstance(at_element, str):
-        return parse_as_attribute(at_element, soup)
-    elif isinstance(at_element, list):
-        return parse_as_array_of_selectors(at_element, soup)
-    elif isinstance(result, str):
-        return result
-    else:
-        return [str(element) for element in result]
+I=getattr
 
+M=list
 
-def parse_as_method(obj_of_soup, soup):
-    method_name = list(obj_of_soup.keys())[0]
-    method_args = obj_of_soup[method_name]
-    result = getattr(soup, method_name)(*method_args)
-    if "at_element" in obj_of_soup:
-        return parse_as_additional_method(obj_of_soup, result, result)
-    elif result is None:
-        return None
-    elif isinstance(result, str):
-        return result
-    else:
-        return [str(element) for element in result]
+L=dict
 
+D=None
 
-def parse_as_attribute(obj_of_soup, soup):
-    attribute = getattr(soup, obj_of_soup, None)
-    if attribute is not None:
-        return str(attribute)
-    else:
-        return None
+F=print
 
+B=str
 
-def parse_as_array_of_selectors(obj_of_soup, soup):
-    inner_result = []
-    for element in obj_of_soup:
-        if isinstance(element, dict):
-            this_soup = parse_as_method(element, soup)
-        elif isinstance(element, str):
-            this_soup = parse_as_attribute(element, soup)
-        if this_soup is not None:
-            inner_result.append(this_soup)
-    return inner_result
+A=isinstance
 
+from flask import Flask,request as G,jsonify as E
 
-app = Flask(__name__)
+from bs4 import BeautifulSoup as Z,ResultSet as N
 
+import requests as Q,json as R
 
-@app.route('/api/scrap', methods=['POST', 'GET'])
-def scrap_data():
-    if request.method == 'POST':
-        payload = request.get_json()
-        url = payload.get('url', '')
-        arguments = payload.get('arguments', [])
-    else:
-        url = request.args.get('url', '')
-        arguments = request.args.getlist('arguments', [])
-        for i in range(len(arguments)):
-            try:
-                arguments[i] = json.loads(arguments[i])
-            except json.JSONDecodeError:
-                pass
+from urllib.parse import urlparse
 
-    if not url:
-        return jsonify({'error': 'URL is missing'}), 400
-    if not arguments:
-        return jsonify({'error': 'arguments are missing'}), 400
+def O(obj_of_soup,result,soup):
 
-    try:
-        response = requests.get(url)
-        response.raise_for_status()
-        main_html = response.text
-        soup = BeautifulSoup(main_html, 'html.parser')
-        result_output = []
+	D=result;E=obj_of_soup[J]
 
-        for obj_of_soup in arguments:
-            if isinstance(obj_of_soup, dict):
-                result_output.append(parse_as_method(obj_of_soup, soup))
-            elif isinstance(obj_of_soup, str):
-                result_output.append(parse_as_attribute(obj_of_soup, soup))
-            elif isinstance(obj_of_soup, list):
-                result_output.extend(parse_as_array_of_selectors(obj_of_soup, soup))
+	for C in E:
 
-        return jsonify(result_output), 200
+		if A(D,N):return[H(C,A)for A in D]
 
-    except requests.RequestException as e:
-        return jsonify({'error': f'Request failed: {str(e)}'}), 500
-    except Exception as e:
-        return jsonify({'error': f'An error occurred: {str(e)}'}), 501
+		elif A(C,L):return H(C,D)
 
+		elif A(C,B):return K(C,soup)
 
-if __name__ == '__main__':
-    app.run()
+		elif A(C,M):return S(C,soup)
+
+		elif A(D,B):return D
+
+		else:return[B(A)for A in D]
+
+def H(obj_of_soup,soup):
+
+	E=obj_of_soup;F=M(E.keys())[0];G=E[F];C=I(soup,F)(*G)
+
+	if J in E:return O(E,C,C)
+
+	elif C is D:return
+
+	elif A(C,B):return C
+
+	else:return[B(A)for A in C]
+
+def K(obj_of_soup,soup):
+
+	A=I(soup,obj_of_soup,D)
+
+	if A is not D:return B(A)
+
+	else:return
+
+def S(obj_of_soup,soup):
+
+	F=soup;G=[];C=F
+
+	for E in obj_of_soup:
+
+		if A(E,L):C=H(E,F)
+
+		elif A(E,B):C=K(E,F)
+
+		if C is not D:G.append(C)
+
+	return G
+
+C=Flask(__name__)
+
+@C.route('/api/scrap',methods=[T,'GET'])
+
+def P():
+
+	Y='arguments';X='url';J='error'
+
+	if G.method==T:U=G.get_json();N=U.get(X,'');C=U.get(Y,[])
+
+	else:
+
+		N=G.args.get(X,'');C=G.args.getlist(Y,[])
+
+		for V in range(len(C)):
+
+			try:C[V]=R.loads(C[V]);F(C)
+
+			except R.JSONDecodeError:pass
+
+		F(C)
+
+	if not N:return E({J:'URL is missing'}),400
+
+	if not C:return E({J:'arguments are missing'}),400
+
+	else:F(C)
+
+	try:
+
+		W=Q.get(N);W.raise_for_status();a=W.text;O=Z(a,'html.parser');I=[]
+
+		for D in C:
+
+			if A(D,L):F('before call');F(D);I.append(H(D,O))
+
+			elif A(D,B):I.append(K(D,O))
+
+			elif A(D,M):I.extend(S(D,O))
+
+		return E(I),200
+
+	except Q.RequestException as P:return E({J:f"Request failed: {B(P)}"}),500
+
+	except Exception as P:return E({J:f"An error occurred: {B(P)}"}),501
+
+if __name__=='__main__':C.run()
