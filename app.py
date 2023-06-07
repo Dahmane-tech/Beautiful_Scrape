@@ -3,42 +3,53 @@ from bs4 import BeautifulSoup, ResultSet
 import requests
 import json
 from urllib.parse import urlparse
+from bs4.element import Tag
 
 def parce_as_additional_methode(obj_of_soup, result, soup):
     at_elment = obj_of_soup["at_elment"]
-    for at_elment_selct in at_elment:        
-         if isinstance(result, ResultSet):   
-           return [parce_as_methode(at_elment_selct, elment) for elment in result]
-         elif isinstance(at_elment_selct, dict):
-           return parce_as_methode(at_elment_selct, result)        
-         elif isinstance(at_elment_selct, str):
-           return parce_as_attribute(at_elment_selct, soup)
-         elif isinstance(at_elment_selct, list):
-           return parce_as_array_of_selctors(at_elment_selct, soup)
-         elif isinstance(result, str):
-           return result
-         else:
-           return [str(element) for element in result]
-           
+    for at_elment_selct in at_elment:
+        if isinstance(at_elment_selct, dict):
+            if isinstance(result, ResultSet):
+                return [parce_as_methode(at_elment_selct, elment) for elment in result]
+            return parce_as_methode(at_elment_selct, result)
+        elif isinstance(at_elment_selct, str):
+            if isinstance(result, ResultSet):
+                return [parce_as_attribute(at_elment_selct, elment) for elment in result]
+            return parce_as_attribute(at_elment_selct, soup)
+        elif isinstance(at_elment_selct, list):
+            if isinstance(result, ResultSet):
+                return [parce_as_array_of_selctors(at_elment_selct, elment) for elment in result]
+            return parce_as_array_of_selctors(at_elment_selct, soup)
+        elif isinstance(result, str):
+            return result
+        else:
+            return [str(element) for element in result]
+
+
 def parce_as_methode(obj_of_soup, soup):
     method_name = list(obj_of_soup.keys())[0]
     method_args = obj_of_soup[method_name]
     result = getattr(soup, method_name)(*method_args)
+    print(type(result))
+    print(result)
     if "at_elment" in obj_of_soup:
         return parce_as_additional_methode(obj_of_soup, result, result)
     elif result is None:
         return None
-    elif isinstance(result, str):
+    elif isinstance(result,  (str, Tag)) :
         return result
     else:
         return [str(element) for element in result]
 
 
-def parce_as_attribute(obj_of_soup, soup):
+def parce_as_attribute(obj_of_soup, soup, as_str=True):
     attribute = getattr(soup, obj_of_soup, None)
+    print(attribute)
     if attribute is not None:
-       
-        return str(attribute)
+        if as_str:
+            return str(attribute)
+        else:
+            return attribute
     else:
         return None
 
@@ -46,16 +57,23 @@ def parce_as_attribute(obj_of_soup, soup):
 def parce_as_array_of_selctors(obj_of_soup, soup):
     inner_result = []
     this_soup = soup
+    result_only = False
     for element in obj_of_soup:
+        print(element, this_soup)
         if isinstance(element, dict):
-            this_soup = parce_as_methode(element, soup)
+            this_soup = parce_as_methode(element, this_soup)
         elif isinstance(element, str):
-            this_soup = parce_as_attribute(element, soup)
+            if not element == "result_only":
+                this_soup = parce_as_attribute(element, this_soup, False)
+                print(this_soup)
+            else: 
+                result_only = True
         if this_soup is not None:
-            inner_result.append(this_soup)
-    return inner_result
-
-
+            if isinstance(this_soup, list):
+                inner_result.append(this_soup)
+            else:
+                inner_result.append(str(this_soup))
+    return str(this_soup) if result_only else inner_result
 
 app = Flask(__name__)
 
