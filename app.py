@@ -117,7 +117,7 @@ def scrap_data():
             elif isinstance(obj_of_soup, str):
             	if (not obj_of_soup == "zipped" ):
             		result_output.append(parce_as_attribute(obj_of_soup, soup))
-                else:
+            	else:
                 	zipped= True
             elif isinstance(obj_of_soup, list):
                 result_output.extend(parce_as_array_of_selctors(obj_of_soup, soup))
