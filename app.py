@@ -43,6 +43,7 @@ def parce_as_methode(obj_of_soup, soup):
 
 
 def parce_as_attribute(obj_of_soup, soup, as_str=True):
+  if (not obj_of_soup == "zipped" ):
     attribute = getattr(soup, obj_of_soup, None)
     print(attribute)
     if attribute is not None:
@@ -52,6 +53,8 @@ def parce_as_attribute(obj_of_soup, soup, as_str=True):
             return attribute
     else:
         return None
+  else:
+      zipped = True
 
 
 def parce_as_array_of_selctors(obj_of_soup, soup):
@@ -108,6 +111,7 @@ def scrap_data():
         main_html = response.text
         soup = BeautifulSoup(main_html, 'html.parser')
         result_output = []
+        zipped= False
         
         for obj_of_soup in arguments:
             if isinstance(obj_of_soup, dict):
@@ -118,8 +122,8 @@ def scrap_data():
                 result_output.append(parce_as_attribute(obj_of_soup, soup))
             elif isinstance(obj_of_soup, list):
                 result_output.extend(parce_as_array_of_selctors(obj_of_soup, soup))
-
-        return jsonify(result_output), 200
+		
+        return jsonify([list(pair) for pair in zip(*result_output)] if zipped  else result_output), 200
 
     except requests.RequestException as e:
         return jsonify({'error': f'Request failed: {str(e)}'}), 500
